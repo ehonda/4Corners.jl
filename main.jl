@@ -112,6 +112,11 @@ julia> Δ₁(0, 0)
             + √(r^2 - 2 * r * (cos(ϕ - π / 4)) + 1)
             + √(r^2 + 2 * r * (cos(ϕ + π / 4)) + 1))
 
+∂ϕΔ(r, ϕ) = ((2 * r * sin(-(ϕ - π / 4)) / √(r^2 + 2 * r * (cos(ϕ - π / 4)) + 1))
+             + (2 * r * sin(ϕ + π / 4) / √(r^2 - 2 * r * (cos(ϕ + π / 4)) + 1))
+             + (2 * r * sin(ϕ - π / 4) / √(r^2 - 2 * r * (cos(ϕ - π / 4)) + 1))
+             + (2 * r * sin(-(ϕ + π / 4)) / √(r^2 + 2 * r * (cos(ϕ + π / 4)) + 1)))
+
 # Utility functions
 
 function gridlines(plot)
@@ -140,13 +145,16 @@ function gridlines(plot)
     end
 end
 
-function plot_single(f, res=100)
+function plot_single(f, res=100, levels=15)
     r = range(0, 1, length=res)
     ϕ = range(-π, π, length=res)
 
     zf = @. f(r', ϕ)
 
-    contour(r, ϕ, zf, color=:turbo, fill=true)
+    plotf = contour(r, ϕ, zf, color=:turbo, fill=true, levels=levels)
+    gridlines(plotf)
+
+    plot(plotf)
 end
 
 function diff_contour(f₁, f₂, res=100)
