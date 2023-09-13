@@ -31,13 +31,16 @@ function plot_single_cart(f, res=100)
 
     zf = @. f(x', y)
 
-    contour(x, y, zf, color=:turbo, fill=true)
+    plotf = contour(x, y, zf, color=:turbo, fill=true)
+    circles(plotf)
+
+    plot(plotf)
 end
 
 function circles(plot)
-    for r in 0:0.1:1
+    for r in 0.1:0.1:1
         ϕ = range(-π, π, length=100)
-        x = (@. r * cos(ϕ))'
+        x = @. r * cos(ϕ)
         y = @. r * sin(ϕ)
 
         if r == 0
@@ -62,10 +65,10 @@ function diff_contour_cart(f₁, f₂, res=100)
     zδ = @. δ(x', y)
 
     plotf₁ = contour(x, y, zf₁, color=:turbo, fill=true)
-    circles(plot)
+    circles(plotf₁)
 
     plotf₂ = contour(x, y, zf₂, color=:turbo, fill=true)
-    
+    circles(plotf₂)
 
     plotδ = contour(x, y, zδ, color=:turbo, fill=true)
 
