@@ -119,13 +119,13 @@ julia> Δ₁(0, 0)
 
 # Utility functions
 
-function gridlines(plot)
+function gridlines(plot, rmax=1, labels=true)
     # odds
     for k in [-3 // 4, -1 // 4, 1 // 4, 3 // 4]
-        r = range(0, 1, length=2)
+        r = range(0, rmax, length=2)
         ϕ = fill(k * π, 2)
 
-        if k == -3 // 4
+        if k == -3 // 4 && labels
             plot!(plot, r, ϕ, color=:black, linewidth=2, label=L"\frac{(2k + 1)\pi}{4}")
         else
             plot!(plot, r, ϕ, color=:black, linewidth=2, label=false)
@@ -134,10 +134,10 @@ function gridlines(plot)
 
     # evens
     for k in [-1, -1 // 2, 0, 1 // 2]
-        r = range(0, 1, length=2)
+        r = range(0, rmax, length=2)
         ϕ = fill(k * π, 2)
 
-        if k == 0
+        if k == 0 && labels
             plot!(plot, r, ϕ, color=:grey, linewidth=2, label=L"\frac{2k\pi}{4}")
         else
             plot!(plot, r, ϕ, color=:grey, linewidth=2, label=false)
@@ -145,14 +145,14 @@ function gridlines(plot)
     end
 end
 
-function plot_single(f, res=100, levels=15)
-    r = range(0, 1, length=res)
+function plot_single(f, res=100, levels=15, rmax=1)
+    r = range(0, rmax, length=res)
     ϕ = range(-π, π, length=res)
 
     zf = @. f(r', ϕ)
 
     plotf = contour(r, ϕ, zf, color=:turbo, fill=true, levels=levels)
-    gridlines(plotf)
+    gridlines(plotf, rmax)
 
     plot(plotf)
 end
@@ -175,6 +175,24 @@ function diff_contour(f₁, f₂, res=100)
 
     plotδ = contour(r, ϕ, zδ, color=:turbo, fill=true)
     plot(plotf₁, plotf₂, plotδ, layout=(1, 3), size=(1200, 400))
+end
+
+function plot_partials_ϕ(rmax_count=4, levels=15, res=100, size=(3000, 3000))
+    plots = []
+    for rmax in range(0.1, 1, length=rmax_count)
+        r = range(0, rmax, length=res)
+        ϕ = range(-π, π, length=res)
+
+        zf = @. ∂ϕΔ(r', ϕ)
+
+        plotf = contour(r, ϕ, zf, color=:turbo, fill=true, levels=levels)
+        gridlines(plotf, rmax, false)
+
+        push!(plots, plotf)
+    end
+
+    #plot(plots..., layout=(1, rmax_count), size=(1200, 400))
+    plot(plots..., size=size)
 end
 
 # Tests
