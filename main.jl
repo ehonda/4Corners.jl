@@ -117,6 +117,21 @@ julia> Δ₁(0, 0)
              + (2 * r * sin(ϕ - π / 4) / √(r^2 - 2 * r * (cos(ϕ - π / 4)) + 1))
              + (2 * r * sin(-(ϕ + π / 4)) / √(r^2 + 2 * r * (cos(ϕ + π / 4)) + 1)))
 
+∂rΔ(r, ϕ) = (((2r + 2(cos(ϕ - π / 4))) / √(r^2 + 2 * r * (cos(ϕ - π / 4)) + 1))
+             + ((2r - 2(cos(ϕ + π / 4))) / √(r^2 - 2 * r * (cos(ϕ + π / 4)) + 1))
+             + ((2r - 2(cos(ϕ - π / 4))) / √(r^2 - 2 * r * (cos(ϕ - π / 4)) + 1))
+             + ((2r + 2(cos(ϕ + π / 4))) / √(r^2 + 2 * r * (cos(ϕ + π / 4)) + 1)))
+
+gradient_Δ(r, ϕ) = [∂rΔ(r, ϕ), ∂ϕΔ(r, ϕ)]
+
+gradient_Δ_norm(r, ϕ) = euclidean(gradient_Δ(r, ϕ), [0, 0])
+
+"""
+    Δ₂(r, ϕ)
+
+"""
+    Δ₂(r, ϕ)
+
 # Utility functions
 
 function gridlines(plot, rmax=1, labels=true)
