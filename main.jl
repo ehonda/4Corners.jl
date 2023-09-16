@@ -126,11 +126,14 @@ gradient_Δ(r, ϕ) = [∂rΔ(r, ϕ), ∂ϕΔ(r, ϕ)]
 
 gradient_Δ_norm(r, ϕ) = euclidean(gradient_Δ(r, ϕ), [0, 0])
 
-"""
-    Δ₂(r, ϕ)
+δ_digits(i, r, ϕ) =
+    let ops = (-1) .^ digits(i, base=2, pad=2)
+        √(r^2 + ops[1] * 2r * cos(ϕ + ops[2] * π / 4) + 1)
+    end
 
-"""
-    Δ₂(r, ϕ)
+Δ_digits(r, ϕ) = sum(δ_digits(i, r, ϕ) for i in 0:3)
+# This is the same order as in the original definition of Δ₁
+# Δ_digits(r, ϕ) = δ_digits(2, r, ϕ) + δ_digits(1, r, ϕ) + δ_digits(3, r, ϕ) + δ_digits(0, r, ϕ)
 
 # Utility functions
 
