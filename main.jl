@@ -126,14 +126,80 @@ gradient_Δ(r, ϕ) = [∂rΔ(r, ϕ), ∂ϕΔ(r, ϕ)]
 
 gradient_Δ_norm(r, ϕ) = euclidean(gradient_Δ(r, ϕ), [0, 0])
 
-δ_digits(i, r, ϕ) =
-    let ops = (-1) .^ digits(i, base=2, pad=2)
-        √(r^2 + ops[1] * 2r * cos(ϕ + ops[2] * π / 4) + 1)
-    end
+# Digits representation
+# ----------------------------------------------------------------------------------------------------------------------
+
+ω(i) = (-1) .^ digits(i, base=2, pad=2)
+
+# Function
+
+δ_digits(i, r, ϕ) = √(r^2 + ω(i)[1] * 2r * cos(ϕ + ω(i)[2] * π / 4) + 1)
 
 Δ_digits(r, ϕ) = sum(δ_digits(i, r, ϕ) for i in 0:3)
-# This is the same order as in the original definition of Δ₁
+
+# This is the same order as in the original definition of Δ₁ (Define this way to see that the difference is 0 when
+# evaluated)
 # Δ_digits(r, ϕ) = δ_digits(2, r, ϕ) + δ_digits(1, r, ϕ) + δ_digits(3, r, ϕ) + δ_digits(0, r, ϕ)
+
+# Partial derivatives of first order
+
+δ_digits_∂r(i, r, ϕ) = ((2r + ω(i)[1] * 2(cos(ϕ + ω(i)[2] * π / 4))) / δ_digits(i, r, ϕ))
+
+Δ_digits_∂r(r, ϕ) = sum(δ_digits_∂r(i, r, ϕ) for i in 0:3)
+
+δ_digits_∂ϕ(i, r, ϕ) = ((-ω(i)[1] * 2r * sin(ϕ + ω(i)[2] * π / 4)) / δ_digits(i, r, ϕ))
+
+Δ_digits_∂ϕ(r, ϕ) = sum(δ_digits_∂ϕ(i, r, ϕ) for i in 0:3)
+
+gradient_Δ_digits(r, ϕ) = [Δ_digits_∂r(r, ϕ), Δ_digits_∂ϕ(r, ϕ)]
+
+gradient_Δ_digits_norm(r, ϕ) = euclidean(gradient_Δ_digits(r, ϕ), [0, 0])
+
+# Partial derivatives of second order
+
+δ_digits_∂r_∂r(i, r, ϕ) = begin
+    f(r) = 2r + ω(i)[1] * 2cos(ϕ + ω(i)[2] * π / 4)
+    g(r) = δ_digits(i, r, ϕ)
+
+    fp(r) = 2
+    gp(r) = δ_digits_∂r(i, r, ϕ)
+
+    (fp(r) * g(r) - f(r) * gp(r)) / g(r)^2
+end
+
+Δ_digits_∂r_∂r(r, ϕ) = sum(δ_digits_∂r_∂r(i, r, ϕ) for i in 0:3)
+
+δ_digits_∂r_∂ϕ(i, r, ϕ) = begin
+    f(ϕ) = 2r + ω(i)[1] * 2cos(ϕ + ω(i)[2] * π / 4)
+    g(ϕ) = δ_digits(i, r, ϕ)
+
+    fp(ϕ) = -ω(i)[1] * 2sin(ϕ + ω(i)[2] * π / 4)
+    gp(ϕ) = δ_digits_∂ϕ(i, r, ϕ)
+
+    (fp(ϕ) * g(ϕ) - f(ϕ) * gp(ϕ)) / g(ϕ)^2
+end
+
+Δ_digits_∂r_∂ϕ(r, ϕ) = sum(δ_digits_∂r_∂ϕ(i, r, ϕ) for i in 0:3)
+
+δ_digits_∂ϕ_∂r(i, r, ϕ) = δ_digits_∂r_∂ϕ(i, r, ϕ)
+
+Δ_digits_∂ϕ_∂r(r, ϕ) = Δ_digits_∂r_∂ϕ(r, ϕ)
+
+δ_digits_∂ϕ_∂ϕ(i, r, ϕ) = begin
+    f(ϕ) = -ω(i)[1] * 2r * sin(ϕ + ω(i)[2] * π / 4)
+    g(ϕ) = δ_digits(i, r, ϕ)
+
+    fp(ϕ) = -ω(i)[1] * 2r * cos(ϕ + ω(i)[2] * π / 4)
+    gp(ϕ) = δ_digits_∂ϕ(i, r, ϕ)
+
+    (fp(ϕ) * g(ϕ) - f(ϕ) * gp(ϕ)) / g(ϕ)^2
+end
+
+Δ_digits_∂ϕ_∂ϕ(r, ϕ) = sum(δ_digits_∂ϕ_∂ϕ(i, r, ϕ) for i in 0:3)
+
+H_digits(r, ϕ) = [Δ_digits_∂r_∂r(r, ϕ) Δ_digits_∂r_∂ϕ(r, ϕ); Δ_digits_∂ϕ_∂r(r, ϕ) Δ_digits_∂ϕ_∂ϕ(r, ϕ)]
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 # Utility functions
 
@@ -211,6 +277,51 @@ function plot_partials_ϕ(rmax_count=4, levels=15, res=100, size=(3000, 3000))
 
     #plot(plots..., layout=(1, rmax_count), size=(1200, 400))
     plot(plots..., size=size)
+end
+
+# Surface plots
+
+# TODO: Animate
+# https://docs.juliaplots.org/latest/animations/
+function polar_surface(f, levels=15, res=100; camera=(-45, 45))
+    r = range(0, 1, length=res)
+    ϕ = range(-π, π, length=res)
+
+    zf = @. f(r', ϕ)
+
+    plotf = surface(r, ϕ, zf, color=:turbo, fill=true, levels=levels, camera=camera)
+
+    plot(plotf)
+end
+
+function cartesian_surface(f, levels=15, res=100; camera=(-45, 45))
+    x = range(-1 / √2, 1 / √2, length=res)
+    y = range(-1 / √2, 1 / √2, length=res)
+
+    zf = @. f(x', y)
+
+    plotf = surface(x, y, zf, color=:turbo, fill=true, levels=levels, camera=camera)
+
+    plot(plotf)
+end
+
+# TODO: Fix animation
+@userplot PolarSurface
+@recipe function polar_surface_frame(scene::PolarSurface)
+    f, camera = scene.args
+    r = range(0, 1, length=100)
+    ϕ = range(-π, π, length=100)
+
+    zf = @. f(r', ϕ)
+
+    surface(r, ϕ, zf, color=:turbo, fill=true, levels=15, camera=camera)
+end
+
+function anim_polar_surface(f)
+    anim = @animate for i in 0:10:360
+        polarsurface(f, (i, 45))
+    end
+    gif(anim, "anim_polar_surface.gif", fps=15)
 end
 
 # Tests
